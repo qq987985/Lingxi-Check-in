@@ -1,0 +1,14 @@
+# Lingxi Check-in
+WPS灵犀自动签到工具
+services:
+  lingxi-checkin:
+    image: ghcr.1ms.run/qq987985/lingxi-checkin:latest
+    container_name: lingxi-checkin
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - CHECKIN_TIMES=08:30,16:30
+      # 推送至GitHub的占位符配置
+      - CHECKIN_URL=请在这里填入抓取到的真实签到接口URL
+      - LINGXI_COOKIE=请在这里填入你的真实Cookie
+      - BARK_URL=请在这里填入你的Bark推送链接(包含Key)
