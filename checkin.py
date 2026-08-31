@@ -5,8 +5,8 @@ import os
 from urllib.parse import quote
 from datetime import date
 
-# 记录上一次成功签到的日期
-last_success_date = None
+# 将成功状态持久化写入本地文件，防止重启后失忆
+STATUS_FILE = "last_success.txt"
 
 def send_bark(title, content):
     bark_url = os.environ.get("BARK_URL")
@@ -24,17 +24,19 @@ def send_bark(title, content):
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Bark 推送失败: {e}")
 
 def do_checkin():
-    global last_success_date
-    today = date.today()
+    today_str = str(date.today())
     
-    # 检查今天是否已经签到成功过
-    if last_success_date == today:
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 今日已签到成功，跳过本次执行。")
-        return
+    # 检查本地文件记录的成功日期
+    if os.path.exists(STATUS_FILE):
+        with open(STATUS_FILE, "r") as f:
+            last_success = f.read().strip()
+        if last_success == today_str:
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 今日已签到成功，跳过本次执行。")
+            return
 
     url = os.environ.get("CHECKIN_URL")
     if not url or "请在这里填入" in url or "xxx" in url:
-        error_msg = "错误: 未配置有效的 CHECKIN_URL 环境变量，或仍在使用默认占位符。"
+        error_msg = "错误: 未配置有效的 CHECKIN_URL 环境变量。"
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {error_msg}")
         send_bark("灵犀签到失败", error_msg)
         return
@@ -60,8 +62,9 @@ def do_checkin():
             send_bark("灵犀签到异常(Cookie可能已失效)", res_text)
         else:
             send_bark("灵犀签到结果", res_text)
-            # 只有在没有报错的情况下，才将今天标记为已成功
-            last_success_date = today
+            # 签到成功后，将今天的日期写入文件持久保存
+            with open(STATUS_FILE, "w") as f:
+                f.write(today_str)
             
     except Exception as e:
         error_msg = f"签到请求网络异常: {e}"
