@@ -1,3 +1,4 @@
+import re
 import requests
 import time
 import schedule
@@ -6,7 +7,9 @@ from urllib.parse import quote
 from datetime import date
 
 # 将成功状态持久化写入本地文件，防止重启后失忆
-STATUS_FILE = "last_success.txt"
+# 放在 data/ 目录下，配合 docker-compose 的 volume 挂载实现容器重建后仍保留
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+STATUS_FILE = os.path.join(DATA_DIR, "last_success.txt")
 
 def send_bark(title, content):
     bark_url = os.environ.get("BARK_URL")
@@ -57,14 +60,30 @@ def do_checkin():
         response = requests.post(url, headers=headers, timeout=10)
         res_text = response.text
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 签到响应: {res_text}")
-        
-        if "未登录" in res_text or "error" in res_text.lower():
+
+        res_compact = res_text.lower().replace(" ", "")
+        is_fail = ("未登录" in res_text
+                   or "失败" in res_text
+                   or ('"error"' in res_compact and '"error":0' not in res_compact))
+        is_success = ("成功" in res_text
+                      or "已签到" in res_text
+                      or "已签过" in res_text
+                      or '"success":true' in res_compact
+                      or '"error":0' in res_compact)
+
+        if is_fail:
+            # 明确的失败特征：未登录/失败/非零 error
             send_bark("灵犀签到异常(Cookie可能已失效)", res_text)
-        else:
+        elif is_success:
+            # 明确的成功特征：成功/已签到/重复签到（今天已签过也算成功，避免重复通知）
             send_bark("灵犀签到结果", res_text)
             # 签到成功后，将今天的日期写入文件持久保存
+            os.makedirs(DATA_DIR, exist_ok=True)
             with open(STATUS_FILE, "w") as f:
                 f.write(today_str)
+        else:
+            # 无法识别的响应：通知人工确认，但不写入成功状态，下个时间点会重试
+            send_bark("灵犀签到结果未知(请人工确认)", res_text)
             
     except Exception as e:
         error_msg = f"签到请求网络异常: {e}"
@@ -75,8 +94,16 @@ if __name__ == "__main__":
     print("启动金山灵犀自动签到服务...")
     
     times_str = os.environ.get("CHECKIN_TIMES", "08:30,16:30")
-    times_list = [t.strip() for t in times_str.split(",") if t.strip()]
-    
+    raw_times = [t.strip() for t in times_str.split(",") if t.strip()]
+
+    # 校验时间格式必须为 HH:MM，非法格式直接剔除并告警，避免启动即崩溃
+    times_list = []
+    for t in raw_times:
+        if re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", t):
+            times_list.append(t)
+        else:
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 警告: 签到时间 '{t}' 格式非法(应为 HH:MM)，已忽略。")
+
     if not times_list:
         times_list = ["08:30"]
         
