@@ -1,5 +1,11 @@
 # Lingxi Check-in
 
+[![GitHub stars](https://img.shields.io/github/stars/qq987985/Lingxi-Check-in?style=flat-square)](https://github.com/qq987985/Lingxi-Check-in/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/qq987985/Lingxi-Check-in?style=flat-square)](https://github.com/qq987985/Lingxi-Check-in/network/members)
+[![License: MIT](https://img.shields.io/github/license/qq987985/Lingxi-Check-in?style=flat-square)](LICENSE)
+[![Build & Push](https://img.shields.io/github/actions/workflow/status/qq987985/Lingxi-Check-in/docker-publish.yml?branch=main&style=flat-square&label=build)](https://github.com/qq987985/Lingxi-Check-in/actions/workflows/docker-publish.yml)
+[![GHCR Image](https://img.shields.io/badge/ghcr.io-lingxi--checkin-blue?style=flat-square&logo=docker&logoColor=white)](https://github.com/qq987985/Lingxi-Check-in/pkgs/container/lingxi-checkin)
+
 金山灵犀自动签到工具。每天定时自动签到，通过 Bark 推送结果到 iPhone，带本地文件持久化记忆，防止容器重启后重复签到 / 重复通知。
 
 ## 功能特性
@@ -59,6 +65,9 @@ services:
 ### 3. 启动
 
 ```bash
+# 首次部署先拉取镜像（compose 也会自动拉，手动拉一次可提前确认网络畅通）
+docker pull ghcr.1ms.run/qq987985/lingxi-checkin:latest
+
 docker compose up -d
 ```
 
