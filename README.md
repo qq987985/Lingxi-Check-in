@@ -116,3 +116,7 @@ rm data/last_success.txt
 ## 开源协议
 
 本项目基于 [MIT License](LICENSE) 开源，可自由使用、修改和分发。本工具仅供学习交流，请遵守目标网站的使用条款。
+
+---
+
+**关键词 / Keywords**：金山灵犀签到、灵犀自动签到、自动签到脚本、签到提醒、Bark 推送、Docker 定时任务、Kingsoft Lingxi auto check-in、sign-in automation、docker-compose cron、self-hosted checkin reminder
