@@ -103,3 +103,7 @@ rm data/last_success.txt
 
 - `docker-compose.yml` 中的 URL、Cookie、Bark Key 属于敏感信息，推送到公开仓库前请确认已替换回占位符
 - `data/` 目录下的签到记录已被 `.gitignore` 排除，不会提交
+
+## 开源协议
+
+本项目基于 [MIT License](LICENSE) 开源，可自由使用、修改和分发。本工具仅供学习交流，请遵守目标网站的使用条款。
