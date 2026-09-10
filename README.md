@@ -37,6 +37,25 @@
 | `BARK_URL` | 否 | Bark 推送链接（含 Key），不配置则不推送 | `https://api.day.app/你的Key` |
 | `TZ` | 否 | 时区 | `Asia/Shanghai`（默认值） |
 
+**docker-compose.yml 模板**（新服务器部署时直接复制，填入三项真实配置即可）：
+
+```yaml
+services:
+  lingxi-checkin:
+    image: ghcr.1ms.run/qq987985/lingxi-checkin:latest
+    container_name: lingxi-checkin
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - CHECKIN_TIMES=08:30,16:30
+      - CHECKIN_URL=请在这里填入抓取到的真实签到接口URL
+      - LINGXI_COOKIE=请在这里填入你的真实Cookie
+      - BARK_URL=请在这里填入你的Bark推送链接(包含Key)
+    volumes:
+      # 持久化签到状态文件，防止容器重建后重复签到/重复通知
+      - ./data:/app/data
+```
+
 ### 3. 启动
 
 ```bash
